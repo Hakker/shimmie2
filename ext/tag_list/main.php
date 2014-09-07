@@ -266,12 +266,14 @@ class TagList extends Extension {
 		foreach($tag_data as $row) {
 			$h_tag = html_escape($row['tag']);
 			$count = $row['count'];
-			if($lastLetter != mb_strtolower(substr($h_tag, 0, count($starts_with)+1))) {
-				$lastLetter = mb_strtolower(substr($h_tag, 0, count($starts_with)+1));
-				$html .= "<p>$lastLetter<br>";
-			}
+/*			// remove commented part if you want two letter breaking. Remove the +1 to make it one letter break.
+*			if($lastLetter != mb_strtolower(substr($h_tag, 0, count($starts_with)+1))) {
+*				$lastLetter = mb_strtolower(substr($h_tag, 0, count($starts_with)+1));
+*				$html .= "<p>$lastLetter<br>";
+*			}
+*/			$html .= "<br>"; //remove or comment this line if you decide to use the one or 2 letter part.
 			$link = $this->tag_link($row['tag']);
-			$html .= "<a href='$link'>$h_tag&nbsp;($count)</a>\n";
+//			$html .= "<a href='$link'>$h_tag&nbsp;($count)</a>\n";
 		}
 
 		if(SPEED_HAX) {file_put_contents($cache_key, $html);}
