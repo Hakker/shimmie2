@@ -88,8 +88,9 @@ class Upload extends Extension {
 		$sb = new SetupBlock("Upload");
 		$sb->position = 10;
 		// Output the limits from PHP so the user has an idea of what they can set.
-		$sb->add_int_option("upload_count", "Max uploads: ");
-		$sb->add_label("<i>PHP Limit = ".ini_get('max_file_uploads')."</i>");
+//		$sb->add_int_option("upload_count", "Max uploads: ");
+//		$sb->add_label("<i>PHP Limit = ".ini_get('max_file_uploads')."</i>");
+		$sb->add_longtext_option("upload_text", "Upload Text:<br>");
 		$sb->add_shorthand_int_option("upload_size", "<br/>Max size per file: ");
 		$sb->add_label("<i>PHP Limit = ".ini_get('upload_max_filesize')."</i>");
 		$sb->add_choice_option("transload_engine", $tes, "<br/>Transload: ");
@@ -181,13 +182,15 @@ class Upload extends Extension {
 					foreach($_FILES as $name => $file) {
 						$tags = $this->tags_for_upload_slot(int_escape(substr($name, 4)));
 						$source = isset($_POST['source']) ? $_POST['source'] : null;
-						$ok = $ok & $this->try_upload($file, $tags, $source);
+						$rating = isset($_POST['rating']) ? $_POST['rating'] : 'Unknown';
+						$ok = $ok & $this->try_upload($file, $tags, $source, $rating);
 					}
 					foreach($_POST as $name => $value) {
 						if(substr($name, 0, 3) == "url" && strlen($value) > 0) {
 							$tags = $this->tags_for_upload_slot(int_escape(substr($name, 3)));
 							$source = isset($_POST['source']) ? $_POST['source'] : $value;
-							$ok = $ok & $this->try_transload($value, $tags, $source);
+							$rating = isset($_POST['rating']) ? $_POST['rating'] : 'Unknown';
+							$ok = $ok & $this->try_transload($value, $tags, $source, $rating);
 						}
 					}
 
@@ -290,6 +293,7 @@ class Upload extends Extension {
 				$metadata['extension'] = $pathinfo['extension'];
 				$metadata['tags'] = $tags;
 				$metadata['source'] = $source;
+				$metadata['rating'] = $rating;
 				
 				/* check if we have been given an image ID to replace */
 				if (!empty($replace)) {
