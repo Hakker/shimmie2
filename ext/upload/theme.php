@@ -16,13 +16,38 @@ class UploadTheme extends Themelet {
 		$max_size = $config->get_int('upload_size');
 		$max_kb = to_shorthand_int($max_size);
 		$upload_list = $this->h_upload_list_1();
+		$upload_text = $config->get_string('upload_text');
+		$message_html = empty($upload_text)     ? "" : "<div class='space' id='upload'><br>$upload_text<br></div><br>";
 		$html = "
+		<div id='upload-page'>$message_html</div>
 			".make_form(make_link("upload"), "POST", $multipart=True, 'file_upload')."
 				<table id='large_upload_form' class='vert'>
-					$upload_list
-					<tr><td width='20'>Tags<td colspan='5'><input name='tags' type='text' placeholder='tagme' class='autocomplete_tags'></td></tr>
-					<tr><td>Source</td><td colspan='5'><input name='source' type='text'></td></tr>
-					<tr><td colspan='6'><input id='uploadbutton' type='submit' value='Post'></td></tr>
+				<tr>
+					<th>File:</th>
+					<td><input type='file' name='data'></td>
+				</tr>
+				<tr>
+					<th>Source:</th>
+					<td><input type='text' name='source' value=''></td>
+				</tr>
+				<tr>
+					<th>Transload:</td><span class='smalltext'><br>link from external source</span>
+					<td><input type='text' name='url'</td>
+				</tr>
+				<tr>
+					<th>Tags:</td><span class='smalltext'><br>Separate tags with spaces.</span>
+					<td><input name='tags' type='text' placeholder='tagme' class='autocomplete_tags'></td>
+				</tr>
+				<tr>
+					<th>Rating:</th>
+					<td><input type='radio' name='rating' checked='checked' value='s' <label for='s'>Safe</label>
+					<input type='radio' name='rating' value='q' <label for='q'>Questionable</label>
+					<input type='radio' name='rating' value='e' <label for='e'>Explicit</label></td>
+				</tr>
+				<tr>
+					<th></th>
+					<td><input id='uploadbutton' type='submit' value='Post'></td>
+				</tr>
 				</table>
 			</form>
 			<small>(Max file size is $max_kb)</small>
