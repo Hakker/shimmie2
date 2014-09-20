@@ -2,11 +2,11 @@
 
 class UploadTheme extends Themelet {
 	public function display_block(Page $page) {
-		$page->add_block(new Block("Upload", $this->build_upload_block(), "left", 20));
+		$page->add_block(new Block("Upload", $this->build_upload_block(), "left"));
 	}
 
 	public function display_full(Page $page) {
-		$page->add_block(new Block("Upload", "Disk nearly full, uploads disabled", "left", 20));
+		$page->add_block(new Block("Upload", "Disk nearly full, uploads disabled", "left"));
 	}
 
 	public function display_page(Page $page) {
@@ -16,6 +16,7 @@ class UploadTheme extends Themelet {
 		$max_size = $config->get_int('upload_size');
 		$max_kb = to_shorthand_int($max_size);
 		$upload_list = $this->h_upload_list_1();
+		$rating_list = $this->h_rating_list();
 		if(strlen($config->get_string('upload_text', '')) > 0) {
 			$upload_link = $config->get_string('upload_text');
 		}
@@ -26,30 +27,22 @@ class UploadTheme extends Themelet {
 		$message_html = empty($upload_link)     ? "" : "<div class='space' id='upload'><br>$upload_link<br></div><br>";
 		$html = "
 		<div id='upload-page'>$message_html</div>
-			".make_form(make_link("upload"), "POST", $multipart=True, 'file_upload')."
+			".make_form(make_link("upload"), "POST", 'file_upload')."
 				<table id='large_upload_form' class='vert'>
 				<tr>
 					<th>File:</th>
 					<td><input type='file' name='data'></td>
 				</tr>
+				$upload_list
 				<tr>
 					<th>Source:</th>
 					<td><input type='text' name='source' value=''></td>
 				</tr>
 				<tr>
-					<th>Transload:</td><span class='smalltext'><br>link from external source</span>
-					<td><input type='text' name='url'</td>
-				</tr>
-				<tr>
 					<th>Tags:</td><span class='smalltext'><br>Separate tags with spaces.</span>
 					<td><input name='tags' type='text' placeholder='tagme' class='autocomplete_tags'></td>
 				</tr>
-				<tr>
-					<th>Rating:</th>
-					<td><input type='radio' name='rating' checked='checked' value='s' <label for='s'>Safe</label>
-					<input type='radio' name='rating' value='q' <label for='q'>Questionable</label>
-					<input type='radio' name='rating' value='e' <label for='e'>Explicit</label></td>
-				</tr>
+				$rating_list
 				<tr>
 					<th></th>
 					<td><input id='uploadbutton' type='submit' value='Post'></td>
@@ -62,9 +55,9 @@ class UploadTheme extends Themelet {
 		$page->set_title("Upload");
 		$page->set_heading("Upload");
 		$page->add_block(new NavBlock());
-		$page->add_block(new Block("Upload", $html, "main", 20));
+		$page->add_block(new Block("Upload", $html, "main"));
 		if($tl_enabled) {
-			$page->add_block(new Block("Bookmarklets", $this->h_bookmarklets(), "left", 20));
+			$page->add_block(new Block("Bookmarklets", $this->h_bookmarklets(), "left", 2));
 		}
 	}
 
@@ -77,44 +70,41 @@ class UploadTheme extends Themelet {
 		if($tl_enabled) {
 			$upload_list .= "
 				<tr>
-					<td colspan='2'>Files</td>
-					<td colspan='2'>URLs</td>
-					<td colspan='2'>Image-Specific Tags</td>
+					<th>Transload:</td><span class='smalltext'><br>link from external source</span>
+					<td><input type='text' name='url'</td>
 				</tr>
 			";
-
-			for($i=0; $i<$upload_count; $i++) {
-				$upload_list .= "
-					<tr>
-						<td colspan='2'><input type='file' name='data$i'></td>
-						<td colspan='2'><input type='text' name='url$i'</td>
-						<td colspan='2'><input type='text' name='tags$i'></td>
-					</tr>
-				";
-			}
 		}
 		else {
 			$upload_list .= "
-				<tr>
-					<td colspan='4'>Files</td>
-					<td colspan='2'>Image-Specific Tags</td>
-				</tr>
 			";
-
-			for($i=0; $i<$upload_count; $i++) {
-				$upload_list .= "
-					<tr>
-						<td colspan='4'><input type='file' name='data$i'></td>
-						<td colspan='2'><input type='text' name='tags$i'></td>
-					</tr>
-				";
-			}
 		}
-
 		return $upload_list;
 	}
 
-	protected function h_upload_List_2() {
+	protected function h_rating_list() {
+		global $config;
+		$rating_list = "";
+		$rating_enabled = ($config->get_string("rating_engine", "none") != "none");
+
+		if($rating_enabled) {
+			$rating_list .= "
+				<tr>
+					<th>Rating:</th>
+					<td><input type='radio' name='rating' checked='checked' value='s' <label for='s'>Safe</label>
+					<input type='radio' name='rating' value='q' <label for='q'>Questionable</label>
+					<input type='radio' name='rating' value='e' <label for='e'>Explicit</label></td>
+				</tr>
+			";
+		}
+		else {
+			$rating_list .= "
+			";
+		}
+		return $rating_list;
+	}
+	
+/*	protected function h_upload_List_2() {
 		global $config;
 
 		$tl_enabled = ($config->get_string("transload_engine", "none") != "none");
@@ -210,7 +200,7 @@ class UploadTheme extends Themelet {
 
 		return $upload_list;
 	}
-
+*/
 	protected function h_bookmarklets() {
 		global $config;
 		$link = make_http(make_link("upload"));
@@ -270,16 +260,19 @@ class UploadTheme extends Themelet {
 
 		$upload_list = "
 				<tr>
-					<td>File</td>
-					<td><input name='data' type='file'></td>
-					";
+					<th>File:</th>
+					<td><input type='file' name='data'></td>
+				</tr>
+				";
 		if($tl_enabled) {
 			$upload_list .="
-			<td>or URL</td>
-			<td><input name='url' type='text'></td>
+				<tr>
+					<th>Transload:</td><span class='smalltext'><br>link from external source</span>
+					<td><input type='text' name='url'</td>
+				</tr>
 			";
 		}
-		$upload_list .= "</tr>";
+		$upload_list .= "";
 
 		$max_size = $config->get_int('upload_size');
 		$max_kb = to_shorthand_int($max_size);
@@ -290,12 +283,18 @@ class UploadTheme extends Themelet {
 		$html = "
 				<p>Replacing Image ID ".$image_id."<br>Please note: You will have to refresh the image page, or empty your browser cache.</p>"
 				.$thumbnail."<br>"
-				.make_form(make_link("upload/replace/".$image_id), "POST", $multipart=True)."
+				.make_form(make_link("upload/replace/".$image_id), "POST")."
 				<input type='hidden' name='image_id' value='$image_id'>
 				<table id='large_upload_form' class='vert'>
 					$upload_list
-					<tr><td>Source</td><td colspan='3'><input name='source' type='text'></td></tr>
-					<tr><td colspan='4'><input id='uploadbutton' type='submit' value='Post'></td></tr>
+					<tr>
+						<th>Source:</th>
+						<td><input type='text' name='source' value=''></td>
+					</tr>
+					<tr>
+						<th></th>
+						<td><input id='uploadbutton' type='submit' value='Post'></td>
+					</tr>
 				</table>
 			</form>
 			<small>(Max file size is $max_kb)</small>
@@ -304,7 +303,7 @@ class UploadTheme extends Themelet {
 		$page->set_title("Replace Image");
 		$page->set_heading("Replace Image");
 		$page->add_block(new NavBlock());
-		$page->add_block(new Block("Upload Replacement Image", $html, "main", 20));
+		$page->add_block(new Block("Upload Replacement Image", $html, "main"));
 	}
 	
 	public function display_upload_status(Page $page, /*bool*/ $ok) {
@@ -339,7 +338,7 @@ class UploadTheme extends Themelet {
 		// <input type='hidden' name='max_file_size' value='$max_size' />
 		return "
 			<div class='mini_upload'>
-			".make_form(make_link("upload"), "POST", $multipart=True)."
+			".make_form(make_link("upload"), "POST")."
 				$upload_list
 				<input name='tags' type='text' placeholder='tagme' class='autocomplete_tags' required='required'>
 				<input type='submit' value='Post'>
@@ -350,4 +349,3 @@ class UploadTheme extends Themelet {
 		";
 	}
 }
-
