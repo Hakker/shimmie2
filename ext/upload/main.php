@@ -276,7 +276,7 @@ class Upload extends Extension {
 	 * @param string $replace
 	 * @return bool TRUE on upload successful.
 	 */
-	private function try_upload($file, $tags, $source, $replace='') {
+	private function try_upload($file, $tags, $source, $rating, $replace='') {
 		global $page, $config, $user;
 
 		if(empty($source)) $source = null;
