@@ -77,6 +77,9 @@ class Upload extends Extension {
 	}
 
 	public function onSetupBuilding(SetupBuildingEvent $event) {
+		$re = array();
+		$re["Disabled"] = "none";
+		$re["Enabled"] = "enabled";
 		$tes = array();
 		$tes["Disabled"] = "none";
 		if(function_exists("curl_init")) {
@@ -90,10 +93,11 @@ class Upload extends Extension {
 		// Output the limits from PHP so the user has an idea of what they can set.
 //		$sb->add_int_option("upload_count", "Max uploads: ");
 //		$sb->add_label("<i>PHP Limit = ".ini_get('max_file_uploads')."</i>");
-		$sb->add_longtext_option("upload_text", "Upload Text:<br>");
+		$sb->add_longtext_option("upload_text", "Upload Text: (can use BBCode)");
 		$sb->add_shorthand_int_option("upload_size", "<br/>Max size per file: ");
 		$sb->add_label("<i>PHP Limit = ".ini_get('upload_max_filesize')."</i>");
 		$sb->add_choice_option("transload_engine", $tes, "<br/>Transload: ");
+		$sb->add_choice_option("rating_engine", $re, "<br/>Rating: ");
 		$sb->add_bool_option("upload_tlsource", "<br/>Use transloaded URL as source if none is provided: ");
 		$event->panel->add_block($sb);
 	}
