@@ -113,7 +113,6 @@ class Upload extends Extension {
 	public function onPageRequest($event) {
 		global $config, $page, $user;
 
-		$upload_text = $config->get_string('upload_text');
 		if($event->page_matches("upload/replace")) {
 			// check if the user is an administrator and can upload files.
 			if(!$user->can("replace_image")) {
