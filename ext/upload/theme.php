@@ -13,6 +13,7 @@ class UploadTheme extends Themelet {
 		global $config, $page;
 
 		$tl_enabled = ($config->get_string("transload_engine", "none") != "none");
+		$rating_enabled = ($config->get_string("rating_engine", "none") != "none");
 		$max_size = $config->get_int('upload_size');
 		$max_kb = to_shorthand_int($max_size);
 		$upload_list = $this->h_upload_list_1();
@@ -59,12 +60,13 @@ class UploadTheme extends Themelet {
 		if($tl_enabled) {
 			$page->add_block(new Block("Bookmarklets", $this->h_bookmarklets(), "left", 2));
 		}
+		if(class_exists("BulkRemove")) BulkRemove::display_admin_block();
+        	if(class_exists("BulkAddTheme")) BulkAddTheme::display_admin_block();
 	}
 
 	protected function h_upload_list_1() {
 		global $config;
 		$upload_list = "";
-		$upload_count = $config->get_int('upload_count');
 		$tl_enabled = ($config->get_string("transload_engine", "none") != "none");
 
 		if($tl_enabled) {
@@ -265,7 +267,7 @@ class UploadTheme extends Themelet {
 				</tr>
 				";
 		if($tl_enabled) {
-			$upload_list .="
+			$upload_list .= "
 				<tr>
 					<th>Transload:</td><span class='smalltext'><br>link from external source</span>
 					<td><input type='text' name='url'</td>
@@ -326,7 +328,6 @@ class UploadTheme extends Themelet {
 		global $config;
 
 		$upload_list = "";
-		$upload_count = $config->get_int('upload_count');
 		
 		for($i=0; $i<$upload_count; $i++) {
 			if($i == 0) $style = ""; // "style='display:visible'";
