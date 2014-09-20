@@ -16,8 +16,14 @@ class UploadTheme extends Themelet {
 		$max_size = $config->get_int('upload_size');
 		$max_kb = to_shorthand_int($max_size);
 		$upload_list = $this->h_upload_list_1();
-		$upload_text = $config->get_string('upload_text');
-		$message_html = empty($upload_text)     ? "" : "<div class='space' id='upload'><br>$upload_text<br></div><br>";
+		if(strlen($config->get_string('upload_text', '')) > 0) {
+			$upload_link = $config->get_string('upload_text');
+		}
+		else {
+		$upload_link = '';
+		}
+		$upload_link = format_text($upload_link);
+		$message_html = empty($upload_link)     ? "" : "<div class='space' id='upload'><br>$upload_link<br></div><br>";
 		$html = "
 		<div id='upload-page'>$message_html</div>
 			".make_form(make_link("upload"), "POST", $multipart=True, 'file_upload')."
