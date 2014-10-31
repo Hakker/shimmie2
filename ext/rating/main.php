@@ -22,10 +22,12 @@
 class RatingSetEvent extends Event {
 	var $image, $rating;
 
-	public function __construct(Image $image, /*char*/ $rating) {
-		assert(in_array($rating, array("s", "q", "e", "u")));
-		$this->image = $image;
+	public function __construct(Image $image, /*char*/ $rating = null) {
+		if (isset($rating)) {
+			assert(in_array($rating, array("s", "q", "e", "u")));
 		$this->rating = $rating;
+		}
+		$this->image = $image;
 	}
 }
 
