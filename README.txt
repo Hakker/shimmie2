@@ -8,6 +8,13 @@
                                                                 
 _________________________________________________________________________
 
+Extra Branch info
+~~~~~~~~~~~~~~~~~
+This is a personal branch with pulls from quarkex and my own commits based on v2.5.0 of Shimmie2
+Feel free to use it, however things may be broken.
+For instance I do not know if this works correctly without the rating system being turned on.
+main focus at the time of writing are the modules upload and rating with fixes to the danbooru2 theme where needed.
+
 
 Shimmie Development
 ~~~~~~~~~~~~~~~~~~~
