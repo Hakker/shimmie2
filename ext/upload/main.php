@@ -141,23 +141,28 @@ class Upload extends Extension {
 				}
 					
 				if(count($_FILES) + count($_POST) > 0) {
+					$replaceId = null;
+					if (isset($_POST['image_id'])) {
+						$replaceId = $_POST['image_id'];
+					}
 					if(count($_FILES) > 1) {
 						throw new UploadException("Can not upload more than one image for replacing.");
 					}
 					
 					$source = isset($_POST['source']) ? $_POST['source'] : null;
 					$tags = ''; // Tags aren't changed when uploading. Set to null to stop PHP warnings.
+					$rating = '';
 					
-					if(count($_FILES)) {
+					if(count($_FILES > 0)) {
 						foreach($_FILES as $file) {
-							$ok = $this->try_upload($file, $tags, $source, $image_id);
+							$ok = $this->try_upload($file, $tags, $source, $replaceId);
 							break; // leave the foreach loop.
 						}
 					}
 					else {
 						foreach($_POST as $name => $value) {
 							if(substr($name, 0, 3) == "url" && strlen($value) > 0) {
-								$ok = $this->try_transload($value, $tags, $source, $image_id);
+								$ok = $this->try_transload($value, $tags, $source, $image_id, $rating);
 								break; // leave the foreach loop.
 							}
 						}
