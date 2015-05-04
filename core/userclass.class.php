@@ -1,11 +1,34 @@
 <?php
+/**
+ * @global UserClass[] $_user_classes
+ */
 $_user_classes = array();
 
+/**
+ * Class UserClass
+ */
 class UserClass {
+
+	/**
+	 * @var null|string
+	 */
 	public $name = null;
+
+	/**
+	 * @var \UserClass|null
+	 */
 	public $parent = null;
+
+	/**
+	 * @var array
+	 */
 	public $abilities = array();
 
+	/**
+	 * @param string $name
+	 * @param null|string $parent
+	 * @param array $abilities
+	 */
 	public function __construct($name, $parent=null, $abilities=array()) {
 		global $_user_classes;
 
@@ -74,6 +97,7 @@ new UserClass("base", null, array(
 
 	"create_comment" => False,
 	"delete_comment" => False,
+	"bypass_comment_checks" => False,  # spam etc
 
 	"replace_image" => False,
 	"create_image" => False,
@@ -140,6 +164,7 @@ new UserClass("admin", "base", array(
 	"ban_image" => True,
 	"create_comment" => True,
 	"delete_comment" => True,
+	"bypass_comment_checks" => True,
 	"replace_image" => True,
 	"manage_extension_list" => True,
 	"manage_alias_list" => True,

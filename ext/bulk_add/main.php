@@ -40,7 +40,9 @@ class BulkAdd extends Extension {
 	}
 
 	public function onAdminBuilding(AdminBuildingEvent $event) {
-		$this->theme->display_admin_block();
+		if(!class_exists("UploadTheme")){
+			$this->theme->display_admin_block();
+	}
 	}
 
 	/**

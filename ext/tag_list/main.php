@@ -194,6 +194,14 @@ class TagList extends Extension {
 
 		$tags_min = $this->get_tags_min();
 		$starts_with = $this->get_starts_with();
+
+		if(class_exists('TagCategories')) {
+			$this->tagcategories = new TagCategories;
+			$tag_category_dict = $this->tagcategories->getKeyedDict();
+			}
+		else {
+			$tag_category_dict = array();
+		}
 		
 		// check if we have a cached version
 		$cache_key = data_path("cache/tag_cloud-" . md5("tc" . $tags_min . $starts_with) . ".html");
@@ -218,7 +226,29 @@ class TagList extends Extension {
 			$link = $this->tag_link($row['tag']);
 			if($size<0.5) $size = 0.5;
 			$h_tag_no_underscores = str_replace("_", " ", $h_tag);
-			$html .= "&nbsp;<a style='font-size: ${size}em' href='$link'>$h_tag_no_underscores</a>&nbsp;\n";
+//			$html .= "&nbsp;<a style='font-size: ${size}em' href='$link'>$h_tag_no_underscores</a>&nbsp;\n";
+
+			$tag_category_css = '';
+			$tag_category_style = "font-size: ${size}em";
+//			$h_tag_split = explode(':', html_escape($h_tag), 2);
+			$stored = $database->get_all('SELECT tag, category FROM tags WHERE tag="'.$row['tag'].'"');
+			$h_tag_split = array( $stored[0]['category'], $stored[0]['tag']);
+			$category = ' ';
+
+		// we found a tag, see if it's valid!
+			if((count($h_tag_split) > 1) and array_key_exists($h_tag_split[0], $tag_category_dict)) {
+			$category = $h_tag_split[0];
+			$h_tag = $h_tag_split[1];
+			$tag_category_css .= ' tag_category_'.$category;
+			$tag_category_style .= ';color:'.html_escape($tag_category_dict[$category]['color']);
+		}
+
+		$html .= '&nbsp;'
+		.'<a class="tag_name'.$tag_category_css.'" '
+		."style='".$tag_category_style."' "
+		."href='$link'>"
+		.str_replace($category.':','',$h_tag_no_underscores)
+		."</a>&nbsp;\n";
 		}
 
 		if(SPEED_HAX) {file_put_contents($cache_key, $html);}
@@ -231,7 +261,15 @@ class TagList extends Extension {
 
 		$tags_min = $this->get_tags_min();
 		$starts_with = $this->get_starts_with();
-		
+
+		if(class_exists('TagCategories')) {
+		$this->tagcategories = new TagCategories;
+		$tag_category_dict = $this->tagcategories->getKeyedDict();
+		}
+		else {
+		$tag_category_dict = array();
+		}
+ 		
 		// check if we have a cached version
 		$cache_key = data_path("cache/tag_alpha-" . md5("ta" . $tags_min . $starts_with) . ".html");
 		if(file_exists($cache_key)) {return file_get_contents($cache_key);}
@@ -266,14 +304,34 @@ class TagList extends Extension {
 		foreach($tag_data as $row) {
 			$h_tag = html_escape($row['tag']);
 			$count = $row['count'];
-/*			// remove commented part if you want two letter breaking. Remove the +1 to make it one letter break.
-*			if($lastLetter != mb_strtolower(substr($h_tag, 0, count($starts_with)+1))) {
-*				$lastLetter = mb_strtolower(substr($h_tag, 0, count($starts_with)+1));
-*				$html .= "<p>$lastLetter<br>";
-*			}
-*/			$html .= "<br>"; //remove or comment this line if you decide to use the one or 2 letter part.
+/*			if($lastLetter != mb_strtolower(substr($h_tag, 0, count($starts_with)+1))) {
+				$lastLetter = mb_strtolower(substr($h_tag, 0, count($starts_with)+1));
+				$html .= "<p>$lastLetter<br>";
+			} */
+			$html .= "<br>";
 			$link = $this->tag_link($row['tag']);
 //			$html .= "<a href='$link'>$h_tag&nbsp;($count)</a>\n";
+
+			$tag_category_css = '';
+			$tag_category_style = '';
+            // $h_tag_split = explode(':', html_escape($tag), 2);
+            $stored = $database->get_all('SELECT tag, category FROM tags WHERE tag="'.$row['tag'].'"');
+            $h_tag_split = array( $stored[0]['category'], $stored[0]['tag']);
+			$category = ' ';
+
+		// we found a tag, see if it's valid!
+			if((count($h_tag_split) > 1) and array_key_exists($h_tag_split[0], $tag_category_dict)) {
+			$category = $h_tag_split[0];
+			$h_tag = $h_tag_split[1];
+			$tag_category_css .= ' tag_category_'.$category;
+			$tag_category_style .= 'color:'.html_escape($tag_category_dict[$category]['color']);
+			}
+
+			$html .= '<a class="tag_name'.$tag_category_css.'" '
+			."style='".$tag_category_style."' "
+			."href='$link'>"
+			.str_replace($category.':','',$h_tag)
+			."&nbsp;($count)</a>\n";
 		}
 
 		if(SPEED_HAX) {file_put_contents($cache_key, $html);}

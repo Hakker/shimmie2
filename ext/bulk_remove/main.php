@@ -19,7 +19,7 @@ class BulkRemove extends Extension {
 		}
 	}
  
-	public function onAdminBuilding(AdminBuildingEvent $event) {
+	public function display_admin_block(){
 		global $page;
 		$html = "<b>Be extremely careful when using this!</b><br>
                     Once an image is removed there is no way to recover it so it is recommended that
@@ -41,6 +41,12 @@ class BulkRemove extends Extension {
 			</form>
 		";
 		$page->add_block(new Block("Bulk Remove", $html));
+    }
+    
+	public function onAdminBuilding(AdminBuildingEvent $event) {
+        if(!class_exists("UploadTheme")){
+            $this->display_admin_block();
+        }
 	}
 
         // returns a list of images to be removed

@@ -22,12 +22,14 @@
 class RatingSetEvent extends Event {
 	var $image, $rating;
 
-	public function __construct(Image $image, /*char*/ $rating = null) {
+	public function __construct(Image $image, $rating = null) {
 		if (isset($rating)) {
 			assert(in_array($rating, array("s", "q", "e", "u")));
-		$this->rating = $rating;
+			$this->rating = $rating;
 		}
+		
 		$this->image = $image;
+		
 	}
 }
 
@@ -107,7 +109,7 @@ class Ratings extends Extension {
 	}
 
 	public function onParseLinkTemplate(ParseLinkTemplateEvent $event) {
-		$event->replace('$rating', $this->theme->rating_to_name($event->image->rating));
+		$event->replace('$rating', $this->rating_to_human($event->image->rating));
 	}
 
 	public function onSearchTermParse(SearchTermParseEvent $event) {
@@ -126,6 +128,16 @@ class Ratings extends Extension {
 		}
 	}
 
+    public function onTagTermParse(TagTermParseEvent $event) {
+		$matches = array();
+		if(preg_match("/^rating[=|:](?:([sqeu].)|(safe|questionable|explicit|unknown))$/D",
+                      strtolower($event->term), $matches)) {
+			$rating = $matches[1] ? $matches[1] : array($matches[2][0]);
+            send_event(new RatingSetEvent(Image::by_id($event->id), $rating[0]));
+            $event->metatag = true;
+		}
+	}
+ 
 	public function onPageRequest(PageRequestEvent $event) {
 		global $database, $user, $page;
 		

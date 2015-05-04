@@ -23,7 +23,10 @@ class TagCategories extends Extension {
 				color TEXT(7)');
 
             $config->set_int("ext_tag_categories_version", 1);
-
+		}
+		if($config->get_int("ext_tag_categories_version") < 2) {
+            $database->execute("ALTER TABLE tags ADD COLUMN category VARCHAR(255) NOT NULL DEFAULT 'general'", array());
+            $config->set_int("ext_tag_categories_version", 2);
             log_info("tag_categories", "extension installed");
 		}
 
@@ -58,6 +61,7 @@ class TagCategories extends Extension {
 			$count = $matches[3];
 
 			$types = $database->get_col('SELECT category FROM image_tag_categories');
+            $types[] = 'general';
 			if(in_array($type, $types)) {
 				$event->add_querylet(
 					new Querylet("EXISTS (
@@ -66,11 +70,74 @@ class TagCategories extends Extension {
 					    LEFT JOIN tags t ON it.tag_id = t.id
 					    WHERE images.id = it.image_id
 					    GROUP BY image_id
-					    HAVING SUM(CASE WHEN t.tag LIKE '$type:%' THEN 1 ELSE 0 END) $cmp $count
+					    HAVING SUM(CASE WHEN t.category LIKE '$type' THEN 1 ELSE 0 END) $cmp $count
 					)"));
 			}
 		}
+        elseif(preg_match("/^(.+)[=|:](.*)$/i", $event->term, $matches)) {
+			global $database;
+			$type = $matches[1];
+			$tag = $matches[2];
+
+			$types = $database->get_col('SELECT category FROM image_tag_categories');
+            $types[] = 'general';
+			if(in_array($type, $types)) {
+                $found = $database->get_one('
+                    SELECT tags.tag 
+                    FROM tags 
+                    WHERE tags.category LIKE :type 
+                    AND tags.tag LIKE :tag
+                ',array('tag'=> $tag, 'type' => $type));
+                if ($found){
+                    $event->term = $tag;
+                }
+			}
+		}
 	}
+    
+	public function onTagTermParse(TagTermParseEvent $event) {
+		$matches = array();
+
+		if(preg_match("/^(.+)[=|:](.*)$/i", $event->term, $matches)) {
+			global $database;
+			$type = $matches[1];
+			$tag = $matches[2];
+
+			$types = $database->get_col('SELECT category FROM image_tag_categories');
+            $types[] = 'general';
+			if(in_array($type, $types)) {
+                $found = $database->get_one('
+                    SELECT tags.tag 
+                    FROM tags 
+                    WHERE tags.category LIKE :type 
+                    AND tags.tag LIKE :tag
+                 ',array('tag'=> $tag, 'type' => $type));
+                if (!$found){
+                    // tag not found by category, does the tag exist?
+                    $id = $database->get_one(
+                            $database->scoreql_to_sql(
+                                "SELECT id FROM tags WHERE SCORE_STRNORM(tag) = SCORE_STRNORM(:tag)"
+                            ),
+                            array("tag"=>$tag));
+                    if(empty($id)) {
+                        // it does not, let's handle this.
+                        $database->execute(
+                                "INSERT INTO tags(tag, category) VALUES (:tag, :category)",
+                                array("tag"=>$tag, "category"=>$type));
+                    }
+                    else {
+                        // it does, let's update the tag category
+                        $database->execute('
+                        UPDATE tags
+                        SET tags.category=:type
+                        WHERE tags.tag LIKE :tag
+                        ',array('tag'=> $tag, 'type' => $type));
+                    }
+                }
+			$event->term = $tag;
+			}
+		}
+		}
 
 	public function getDict() {
 		global $database;

@@ -27,7 +27,7 @@
 
 class BBCode extends FormatterExtension {
 	public function format(/*string*/ $text) {
-		$text = $this->extract_code($text);
+		$text = $this->extract_code($text);		
 		foreach(array(
 			"b", "i", "u", "s", "sup", "sub", "h1", "h2", "h3", "h4",
 		) as $el) {
@@ -41,9 +41,9 @@ class BBCode extends FormatterExtension {
 		$text = preg_replace('!\[url\]((?:https?|ftp|irc|mailto)://.*?)\[/url\]!s', '<a href="$1">$1</a>', $text);
 		$text = preg_replace('!\[email\](.*?)\[/email\]!s', '<a href="mailto:$1">$1</a>', $text);
 		$text = preg_replace('!\[img\](https?:\/\/.*?)\[/img\]!s', '<img src="$1">', $text);
-		$text = preg_replace('!\[size=([0-9]{1,2})\](.*)\[\/size\]!isU', '<span style="font-size:$1px;">$2</span>', $text);
-		$text = preg_replace('!\[font=(.*)\](.*)\[\/font\]!isU', '<span style="font-family:$1;">$2</span>', $text);
-		$text = preg_replace('!\[color=(.*)\](.*)\[\/color\]!isU', '<span style="color:$1;">$2</span>', $text);
+		$text = preg_replace('!\[size=([0-9]{1,2})\](.*)\[\/size\]!sU', '<span style="font-size:$1px;">$2</span>', $text);
+		$text = preg_replace('!\[font=(.*)\](.*)\[\/font\]!sU', '<span style="font-family:$1;">$2</span>', $text);
+		$text = preg_replace('!\[color=(.*)\](.*)\[\/color\]!sU', '<span style="color:$1;">$2</span>', $text);
 		$text = preg_replace('!\[\[([^\|\]]+)\|([^\]]+)\]\]!s', '<a href="'.make_link('wiki/$1').'">$2</a>', $text);
 		$text = preg_replace('!\[\[([^\]]+)\]\]!s', '<a href="'.make_link('wiki/$1').'">$1</a>', $text);
 		$text = preg_replace("!\n\s*\n!", "\n\n", $text);
@@ -68,7 +68,7 @@ class BBCode extends FormatterExtension {
 	public function strip(/*string*/ $text) {
 		foreach(array(
 			"b", "i", "u", "s", "sup", "sub", "h1", "h2", "h3", "h4",
-			"code", "url", "email", "li",
+			"url", "email", "li",
 		) as $el) {
 			$text = preg_replace("!\[$el\](.*?)\[/$el\]!s", '$1', $text);
 		}

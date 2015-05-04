@@ -13,3 +13,8 @@
 	display: none;
 }
 
+TABLE.image_info{
+    width: auto;
+    min-width: 300px;
+    max-width: 600px;
+}

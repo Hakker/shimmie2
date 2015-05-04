@@ -100,8 +100,8 @@ class Upload extends Extension {
 		$sb->add_choice_option("rating_engine", $re, "<br/>Rating: ");
 		$sb->add_bool_option("upload_tlsource", "<br/>Use transloaded URL as source if none is provided: ");
 		$event->panel->add_block($sb);
-	}
-
+		}
+		
 	public function onDataUpload(DataUploadEvent $event) {
 		global $config;
 		if($this->is_full) {
@@ -116,7 +116,7 @@ class Upload extends Extension {
 
 	public function onPageRequest($event) {
 		global $config, $page, $user;
-
+		
 		if($event->page_matches("upload/replace")) {
 			// check if the user is an administrator and can upload files.
 			if(!$user->can("replace_image")) {
@@ -134,28 +134,33 @@ class Upload extends Extension {
 				if(empty($image_id)) {
 					throw new UploadException("Can not replace Image: No valid Image ID given.");
 				}
-					
+
 				$image_old = Image::by_id($image_id);
 				if(is_null($image_old)) {
 					$this->theme->display_error(404, "Image not found", "No image in the database has the ID #$image_id");
 				}
-					
+
 				if(count($_FILES) + count($_POST) > 0) {
 					$replaceId = null;
 					if (isset($_POST['image_id'])) {
 						$replaceId = $_POST['image_id'];
 					}
+/*					$replaceId = null;
+					if (isset($_POST['image_id'])) {
+						$replaceId = $_POST['image_id'];
+					} */
+				
 					if(count($_FILES) > 1) {
 						throw new UploadException("Can not upload more than one image for replacing.");
 					}
-					
+
 					$source = isset($_POST['source']) ? $_POST['source'] : null;
 					$tags = ''; // Tags aren't changed when uploading. Set to null to stop PHP warnings.
 					$rating = '';
-					
-					if(count($_FILES > 0)) {
+
+					if(count($_FILES) > 0) {
 						foreach($_FILES as $file) {
-							$ok = $this->try_upload($file, $tags, $source, $replaceId);
+							$ok = $this->try_upload($file, $tags, $source, $rating, $replaceId);
 							break; // leave the foreach loop.
 						}
 					}
@@ -173,7 +178,7 @@ class Upload extends Extension {
 					$url = $_GET['url'];
 					$source = isset($_GET['source']) ? $_GET['source'] : $url;
 					$ok = $this->try_transload($url, $tags, $source, $image_id);
-					$this->theme->display_upload_status($page, $ok);		
+					$this->theme->display_upload_status($page, $ok);
 				}
 				else {
 					$this->theme->display_replace_page($page, $image_id);
@@ -212,7 +217,7 @@ class Upload extends Extension {
 					if(!empty($_GET['tags']) && $_GET['tags'] != "null") {
 						$tags = Tag::explode($_GET['tags']);
 					}
-							
+
 					$ok = $this->try_transload($url, $tags, $source);
 					$this->theme->display_upload_status($page, $ok);
 				}
@@ -295,7 +300,7 @@ class Upload extends Extension {
 				if ($file['error'] !== UPLOAD_ERR_OK) {
 					throw new UploadException($this->upload_error_message($file['error']));
 				}
-				
+
 				$pathinfo = pathinfo($file['name']);
 				$metadata = array();
 				$metadata['filename'] = $pathinfo['basename'];
@@ -303,12 +308,12 @@ class Upload extends Extension {
 				$metadata['tags'] = $tags;
 				$metadata['source'] = $source;
 				$metadata['rating'] = $rating;
-				
+
 				/* check if we have been given an image ID to replace */
 				if (!empty($replace)) {
 					$metadata['replace'] = $replace;
 				}
-				
+
 				$event = new DataUploadEvent($file['tmp_name'], $metadata);
 				send_event($event);
 				if($event->image_id == -1) {
@@ -344,7 +349,7 @@ class Upload extends Extension {
 		if($user->can("edit_image_lock") && !empty($_GET['locked'])){
 			$locked = bool_escape($_GET['locked']);
 		}
-		
+
 		// Checks if url contains rating, also checks if the rating extension is enabled.
 		if($config->get_string("transload_engine", "none") != "none" && class_exists("Ratings") && !empty($_GET['rating'])) {
 			// Rating event will validate that this is s/q/e/u
@@ -378,22 +383,22 @@ class Upload extends Extension {
 			$metadata['extension'] = getExtension($headers['Content-Type']) ?: $pathinfo['extension'];
 			$metadata['tags'] = $tags;
 			$metadata['source'] = (($url == $source) && !$config->get_bool('upload_tlsource') ? "" : $source);
-			
+
 			/* check for locked > adds to metadata if it has */
 			if(!empty($locked)){
 				$metadata['locked'] = $locked ? "on" : "";
 			}
-						
+
 			/* check for rating > adds to metadata if it has */
 			if(!empty($rating)){
 				$metadata['rating'] = $rating;
 			}
-			
+
 			/* check if we have been given an image ID to replace */
 			if (!empty($replace)) {
 				$metadata['replace'] = $replace;
 			}
-			
+
 			$event = new DataUploadEvent($tmp_filename, $metadata);
 			try {
 				send_event($event);

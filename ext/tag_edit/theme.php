@@ -49,7 +49,7 @@ class TagEditTheme extends Themelet {
 				<td>
 		".($user->can("edit_image_tag") ? "
 					<span class='view'>$h_tag_links</span>
-					<input class='edit' type='text' name='tag_edit__tags' value='$h_tags' class='autocomplete_tags' id='tag_editor'>
+					<textarea class='edit autocomplete_tags' name='tag_edit__tags' style='resize:vertical;' id='tag_editor'>$h_tags</textarea>
 		" : "
 					$h_tag_links
 		")."
@@ -84,21 +84,26 @@ class TagEditTheme extends Themelet {
 		global $user;
 		$h_source = html_escape($image->get_source());
 		$f_source = $this->format_source($image->get_source());
+		$style = "overflow: hidden; white-space: nowrap; max-width: 350px; text-overflow: ellipsis;";
 		return "
 			<tr>
 				<th>Source</th>
 				<td>
 		".($user->can("edit_image_source") ? "
-					<span class='view' style='overflow: hidden; white-space: nowrap;'>$f_source</span>
+					<div class='view' style='$style'>$f_source</div>
 					<input class='edit' type='text' name='tag_edit__source' value='$h_source'>
 		" : "
-					<span style='overflow: hidden; white-space: nowrap;'>$f_source</span>
+					<div style='$style'>$f_source</div>
 		")."
 				</td>
 			</tr>
 		";
 	}
 
+	/**
+	 * @param string $source
+	 * @return string
+	 */
 	protected function format_source(/*string*/ $source) {
 		if(!empty($source)) {
 			if(!startsWith($source, "http://") && !startsWith($source, "https://")) {

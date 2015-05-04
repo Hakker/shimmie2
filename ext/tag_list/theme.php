@@ -1,13 +1,23 @@
 <?php
 
 class TagListTheme extends Themelet {
-	var $heading = "";
-	var $list = "";
+	/** @var string  */
+	public $heading = "";
+	/** @var string|string[]  */
+	public $list = "";
 
+	public $navigation;
+
+	/**
+	 * @param string $text
+	 */
 	public function set_heading($text) {
 		$this->heading = $text;
 	}
 
+	/**
+	 * @param string|string[] $list
+	 */
 	public function set_tag_list($list) {
 		$this->list = $list;
 	}
@@ -183,7 +193,7 @@ class TagListTheme extends Themelet {
 	}
 
 	public function return_tag($row, $tag_category_dict) {
-		global $config;
+		global $config, $database;
 
 		$display_html = '';
 		$tag = $row['tag'];
@@ -191,7 +201,9 @@ class TagListTheme extends Themelet {
 		
 		$tag_category_css = '';
 		$tag_category_style = '';
-		$h_tag_split = explode(':', html_escape($tag), 2);
+		// $h_tag_split = explode(':', html_escape($tag), 2);
+        $stored = $database->get_all('SELECT tag, category FROM tags WHERE tag="'.$row['tag'].'"');
+		$h_tag_split = array( $stored[0]['category'], $stored[0]['tag']);
 		$category = ' ';
 
 		// we found a tag, see if it's valid!
@@ -206,7 +218,7 @@ class TagListTheme extends Themelet {
 		$count = $row['calc_count'];
 		// if($n++) $display_html .= "\n<br/>";
 		if(!is_null($config->get_string('info_link'))) {
-			$link = str_replace('$tag', $tag, $config->get_string('info_link'));
+			$link = str_replace('$tag', str_replace($category.':','',$tag), $config->get_string('info_link'));
 			$display_html .= ' <a class="tag_info_link'.$tag_category_css.'" '.$tag_category_style.'href="'.$link.'">?</a>';
 		}
 		$link = $this->tag_link($row['tag']);
@@ -219,6 +231,11 @@ class TagListTheme extends Themelet {
 		return array($category, $display_html);
 	}
 
+	/**
+	 * @param string $tag
+	 * @param string[] $tags
+	 * @return string
+	 */
 	protected function ars(/*string*/ $tag, /*array(string)*/ $tags) {
 		assert(is_array($tags));
 
@@ -234,6 +251,11 @@ class TagListTheme extends Themelet {
 		return $html;
 	}
 
+	/**
+	 * @param array $tags
+	 * @param string $tag
+	 * @return string
+	 */
 	protected function get_remove_link($tags, $tag) {
 		if(!in_array($tag, $tags) && !in_array("-$tag", $tags)) {
 			return "";
@@ -245,6 +267,11 @@ class TagListTheme extends Themelet {
 		}
 	}
 
+	/**
+	 * @param array $tags
+	 * @param string $tag
+	 * @return string
+	 */
 	protected function get_add_link($tags, $tag) {
 		if(in_array($tag, $tags)) {
 			return "";
@@ -256,6 +283,11 @@ class TagListTheme extends Themelet {
 		}
 	}
 
+	/**
+	 * @param array $tags
+	 * @param string $tag
+	 * @return string
+	 */
 	protected function get_subtract_link($tags, $tag) {
 		if(in_array("-$tag", $tags)) {
 			return "";
@@ -267,6 +299,10 @@ class TagListTheme extends Themelet {
 		}
 	}
 
+	/**
+	 * @param string $tag
+	 * @return string
+	 */
 	protected function tag_link($tag) {
 		$u_tag = url_escape($tag);
 		return make_link("post/list/$u_tag/1");

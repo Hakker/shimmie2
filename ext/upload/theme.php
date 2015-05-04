@@ -3,6 +3,7 @@
 class UploadTheme extends Themelet {
 	public function display_block(Page $page) {
 		$page->add_block(new Block("Upload", $this->build_upload_block(), "left"));
+
 	}
 
 	public function display_full(Page $page) {
@@ -11,7 +12,6 @@ class UploadTheme extends Themelet {
 
 	public function display_page(Page $page) {
 		global $config, $page;
-
 		$tl_enabled = ($config->get_string("transload_engine", "none") != "none");
 		$rating_enabled = ($config->get_string("rating_engine", "none") != "none");
 		$max_size = $config->get_int('upload_size');
@@ -52,7 +52,7 @@ class UploadTheme extends Themelet {
 			</form>
 			<small>(Max file size is $max_kb)</small>
 		";
-		
+
 		$page->set_title("Upload");
 		$page->set_heading("Upload");
 		$page->add_block(new NavBlock());
@@ -60,8 +60,8 @@ class UploadTheme extends Themelet {
 		if($tl_enabled) {
 			$page->add_block(new Block("Bookmarklets", $this->h_bookmarklets(), "left", 2));
 		}
-		if(class_exists("BulkRemove")) BulkRemove::display_admin_block();
-        	if(class_exists("BulkAddTheme")) BulkAddTheme::display_admin_block();
+        if(class_exists("BulkRemove")) BulkRemove::display_admin_block();
+        if(class_exists("BulkAddTheme")) BulkAddTheme::display_admin_block();
 	}
 
 	protected function h_upload_list_1() {
@@ -83,7 +83,7 @@ class UploadTheme extends Themelet {
 		}
 		return $upload_list;
 	}
-
+	
 	protected function h_rating_list() {
 		global $config;
 		$rating_list = "";
@@ -105,7 +105,7 @@ class UploadTheme extends Themelet {
 		}
 		return $rating_list;
 	}
-	
+
 /*	protected function h_upload_List_2() {
 		global $config;
 
@@ -113,25 +113,25 @@ class UploadTheme extends Themelet {
 		// Uploader 2.0!
 		$upload_list = "";
 		$upload_count = $config->get_int('upload_count');
-		
+
 		for($i=0; $i<$upload_count; $i++) {
 			$a = $i+1;
 			$s = $i-1;
-			
+
 			if($i != 0) {
 				$upload_list .="<tr id='row$i' style='display:none'>";
 			}else{
 				$upload_list .= "<tr id='row$i'>";
 			}
-			
+
 			$upload_list .= "<td width='15'>";
-					
+
 			if($i == 0) {
 				$js = 'javascript:$(function() {
 					$("#row'.$a.'").show();
 					$("#hide'.$i.'").hide();
 					$("#hide'.$a.'").show();});';
-				
+
 				$upload_list .= "
 					<div id='hide$i'>
 						<img id='wrapper' src='ext/upload/minus.png' />
@@ -146,12 +146,12 @@ class UploadTheme extends Themelet {
 				$("#data'.$i.'").val("");
 				$("#url'.$i.'").val("");
 				});';
-				
+
 				$upload_list .="
 					<div id='hide$i'>
 						<a href='#' onclick='$js'><img src='ext/upload/minus.png' /></a>
 				";
-				
+
 				if($a == $upload_count){
 					$upload_list .="<img id='wrapper' src='ext/upload/plus.png' />";
 				}
@@ -160,7 +160,7 @@ class UploadTheme extends Themelet {
 						$("#row'.$a.'").show();
 						$("#hide'.$i.'").hide();
 						$("#hide'.$a.'").show(); });';
-						
+
 					$upload_list .=
 					"<a href='#' onclick='$js1'>".
 					"<img src='ext/upload/plus.png' /></a>";
@@ -168,7 +168,7 @@ class UploadTheme extends Themelet {
 				$upload_list .= "</div>";
 			}
 			$upload_list .= "</td>";
-					
+
 			$js2 = 'javascript:$(function() {
 						$("#url'.$i.'").hide();
 						$("#url'.$i.'").val("");
@@ -176,14 +176,14 @@ class UploadTheme extends Themelet {
 
 			$upload_list .= "
 				<form><td width='60'><input id='radio_button_a$i' type='radio' name='method' value='file' checked='checked' onclick='$js2' /> File<br>";
-			
+
 			if($tl_enabled) {
 				$js = 'javascript:$(function() {
 						$("#data'.$i.'").hide();
 						$("#data'.$i.'").val("");
 						$("#url'.$i.'").show(); });';
-				
-				$upload_list .= 
+
+				$upload_list .=
 				"<input id='radio_button_b$i' type='radio' name='method' value='url' onclick='$js' /> URL</ br></td></form>
 				<td>
 					<input id='data$i' name='data$i' class='wid' type='file'>
@@ -194,7 +194,7 @@ class UploadTheme extends Themelet {
 				<td width='250'><input id='data$i' name='data$i' class='wid' type='file'></td>
 				";
 			}
-					
+
 			$upload_list .= "
 				</tr>
 			";
@@ -278,25 +278,25 @@ class UploadTheme extends Themelet {
 
 		$max_size = $config->get_int('upload_size');
 		$max_kb = to_shorthand_int($max_size);
-		
+
 		$image = Image::by_id($image_id);
 		$thumbnail = $this->build_thumb_html($image, null);
-		
+
 		$html = "
 				<p>Replacing Image ID ".$image_id."<br>Please note: You will have to refresh the image page, or empty your browser cache.</p>"
 				.$thumbnail."<br>"
-				.make_form(make_link("upload/replace/".$image_id), "POST")."
+				.make_form(make_link("upload/replace/".$image_id), "POST", $multipart=True)."
 				<input type='hidden' name='image_id' value='$image_id'>
 				<table id='large_upload_form' class='vert'>
 					$upload_list
-					<tr>
-						<th>Source:</th>
-						<td><input type='text' name='source' value=''></td>
-					</tr>
-					<tr>
-						<th></th>
-						<td><input id='uploadbutton' type='submit' value='Post'></td>
-					</tr>
+				<tr>
+					<th>Source:</th>
+					<td><input type='text' name='source' value=''></td>
+				</tr>
+				<tr>
+					<th></th>
+					<td><input id='uploadbutton' type='submit' value='Post'></td>
+				</tr>
 				</table>
 			</form>
 			<small>(Max file size is $max_kb)</small>
@@ -307,7 +307,7 @@ class UploadTheme extends Themelet {
 		$page->add_block(new NavBlock());
 		$page->add_block(new Block("Upload Replacement Image", $html, "main"));
 	}
-	
+
 	public function display_upload_status(Page $page, /*bool*/ $ok) {
 		if($ok) {
 			$page->set_mode("redirect");
@@ -328,7 +328,8 @@ class UploadTheme extends Themelet {
 		global $config;
 
 		$upload_list = "";
-		
+		$upload_count = $config->get_int('upload_count');
+
 		for($i=0; $i<$upload_count; $i++) {
 			if($i == 0) $style = ""; // "style='display:visible'";
 			else $style = "style='display:none'";
@@ -339,7 +340,7 @@ class UploadTheme extends Themelet {
 		// <input type='hidden' name='max_file_size' value='$max_size' />
 		return "
 			<div class='mini_upload'>
-			".make_form(make_link("upload"), "POST")."
+			".make_form(make_link("upload"), "POST", $multipart=True)."
 				$upload_list
 				<input name='tags' type='text' placeholder='tagme' class='autocomplete_tags' required='required'>
 				<input type='submit' value='Post'>
