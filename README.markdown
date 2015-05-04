@@ -12,11 +12,12 @@
 
 [![Build Status](https://travis-ci.org/shish/shimmie2.svg?branch=master)](https://travis-ci.org/shish/shimmie2)
 
-This is the main branch of Shimmie, if you know anything at all about running
-websites, this is the version to use.
+# Extra Branch info
 
-Alternatively if you want a version that will never have significant changes,
-check out one of the versioned branches.
+This is a personal branch with pulls from quarkex and my own commits based on v2.5.4 of Shimmie2
+Feel free to use it, however things may be broken.
+For instance I do not know if this works correctly without the rating system being turned on.
+main focus at the time of writing are the modules upload and rating with fixes to the danbooru2 theme where needed.
 
 # Requirements
 
